@@ -1,19 +1,19 @@
 const puppeteer = require('puppeteer');
-const fs = require('fs');
-const path = require('path');
+const express = require('express');
+
+const app = express();
+
+var dataaa = [];
+
+app.listen(3000, () => {
+  'server started on port: 3000';
+});
+
+app.get('/', async (req, res) => {
+  res.send(dataaa);
+});
 
 require('dotenv').config();
-
-function convertToCSV({ data, name = 'best_sellers_AWS' }) {
-  const csv = [
-    ['Image URL', 'URL', 'Description', 'Price'],
-    ...data.map((book) => [book.image, book.url, book.description, book.price]),
-  ]
-    .map((row) => row.join(','))
-    .join('\n');
-
-  fs.writeFileSync(path.join(__dirname, `${name}.csv`), csv);
-}
 
 function sleepFor({ seconds }) {
   var secondsToWait = seconds * 1000;
@@ -25,8 +25,6 @@ function sleepFor({ seconds }) {
   });
 }
 
-// não usar a sintax sugar do asyn await
-// compartilhar o page
 async function setMouseInteractWithElement({ selector, page }) {
   const element = await page.$(selector);
   const boundingBox = await element.boundingBox();
@@ -36,7 +34,7 @@ async function setMouseInteractWithElement({ selector, page }) {
   );
 }
 
-(async () => {
+(async function scraping() {
   const browser = await puppeteer.launch({ headless: false });
   const page = await browser.newPage();
   await page.goto(
@@ -85,37 +83,9 @@ async function setMouseInteractWithElement({ selector, page }) {
         ?.querySelector('._cDEzb_p13n-sc-price_3mJ9Z')
         ?.textContent.trim(),
     }));
-
-    // tres classes: a-carousel-left, a-carousel-center, a-carousel-right
   });
 
-  convertToCSV({ data });
-
   await browser.close();
+
+  dataaa = data;
 })();
-
-// logica pra ir scrollando e pegar mais elementos, funciona com scroll infinito onde para fazer o fecth vai ate o final da tela:
-/*
-    const distance = 100;
-    let scrolledAmount = 0;
-
-    const timer = setInterval(() => {
-      window.scrollBy(0, distance);
-      scrolledAmount += distance;
-
-      if (scrolledAmount >= document.body.scrollHeight) {
-        clearInterval(timer);
-        resolve();
-      }
-    }, 100);
-
-
-
-
-    Array.from(...[new Array(10000)]).forEach((_, index) => {
-    setTimeout(() => {
-       document.querySelector('#twotabsearchtextbox').setAttribute('value', `fone de ouvido - {index}`)
-        document.querySelector('#nav-search-submit-button').click(); 
-    }, 3000)
-})
-   */
