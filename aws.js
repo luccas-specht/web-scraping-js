@@ -1,5 +1,19 @@
 const puppeteer = require('puppeteer');
+const fs = require('fs');
+const path = require('path');
+
 require('dotenv').config();
+
+function convertToCSV({ data, name = 'best_sellers_AWS' }) {
+  const csv = [
+    ['Image URL', 'URL', 'Description', 'Price'],
+    ...data.map((book) => [book.image, book.url, book.description, book.price]),
+  ]
+    .map((row) => row.join(','))
+    .join('\n');
+
+  fs.writeFileSync(path.join(__dirname, `${name}.csv`), csv);
+}
 
 function sleepFor({ seconds }) {
   var secondsToWait = seconds * 1000;
@@ -89,7 +103,7 @@ async function setMouseInteractWithElement({ selector, page }) {
     return elements.map((el) => ({
       // Extraia as informações desejadas dos elementos
       image: el?.querySelector('img')?.src,
-      link: el?.querySelector('a')?.href,
+      url: el?.querySelector('a')?.href,
       description: el
         ?.querySelector('.p13n-sc-truncate-desktop-type2.p13n-sc-truncated')
         ?.textContent.trim(), // Substitua 'description-class' pela classe rea
@@ -107,5 +121,7 @@ async function setMouseInteractWithElement({ selector, page }) {
     // preço
   });
 
-  console.log({ data });
+  convertToCSV({ data });
+
+  await browser.close();
 })();
