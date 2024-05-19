@@ -14,7 +14,6 @@ function sleepFor({ seconds }) {
 // não usar a sintax sugar do asyn await
 // compartilhar o page
 async function setMouseInteractWithElement({ selector, page }) {
-  console.log({ selector, page });
   const element = await page.$(selector);
   const boundingBox = await element.boundingBox();
   await page.mouse.move(
@@ -26,7 +25,6 @@ async function setMouseInteractWithElement({ selector, page }) {
 (async () => {
   const browser = await puppeteer.launch({ headless: false });
 
-  console.log({ opa: this.globalPage });
   const page = await browser.newPage();
 
   await page.goto(
@@ -54,17 +52,60 @@ async function setMouseInteractWithElement({ selector, page }) {
   await sleepFor({ seconds: 1 });
 
   await page.waitForSelector('[data-menu-id="1"]');
-  /*
-  
-  const link = await page.evaluate(() => {
+  /* const link = await page.evaluate(() => {
     return document
       .querySelector('[data-menu-id="1"] li a')
       .getAttribute('href');
-  });
-
-  console.log({ link });
-  
-  */
+  }); */
 
   await page.click('[data-menu-id="1"] li a');
+
+  await page.waitForSelector(
+    '.a-carousel-row-inner .a-carousel-col.a-carousel-center .zg-carousel-general-faceout .p13n-sc-uncoverable-faceout'
+  );
+  const data = await page.evaluate(async () => {
+    // logica pra ir scrollando e pegar mais elementos, funciona com scroll infinito onde para fazer o fecth vai ate o final da tela:
+    /*
+    const distance = 100;
+    let scrolledAmount = 0;
+
+    const timer = setInterval(() => {
+      window.scrollBy(0, distance);
+      scrolledAmount += distance;
+
+      if (scrolledAmount >= document.body.scrollHeight) {
+        clearInterval(timer);
+        resolve();
+      }
+    }, 100);
+   */
+
+    const elements = Array.from(
+      document.querySelectorAll(
+        '.a-carousel-row-inner .a-carousel-col.a-carousel-center .zg-carousel-general-faceout .p13n-sc-uncoverable-faceout'
+      )
+    );
+
+    return elements.map((el) => ({
+      // Extraia as informações desejadas dos elementos
+      image: el?.querySelector('img')?.src,
+      link: el?.querySelector('a')?.href,
+      description: el
+        ?.querySelector('.p13n-sc-truncate-desktop-type2.p13n-sc-truncated')
+        ?.textContent.trim(), // Substitua 'description-class' pela classe rea
+      price: el
+        ?.querySelector('._cDEzb_p13n-sc-price_3mJ9Z')
+        ?.textContent.trim(), // Substitua 'price-class' pela classe real
+    }));
+
+    // tres classes: a-carousel-left, a-carousel-center, a-carousel-right
+    // document.querySelectorAll('.a-carousel-row-inner')
+    // .  a-carousel-col a-carousel-center
+    // imagem
+    // descrição
+    // link
+    // preço
+  });
+
+  console.log({ data });
 })();
