@@ -1,16 +1,19 @@
 const puppeteer = require('puppeteer');
 const express = require('express');
+const cors = require('cors');
 
+// default: all ULRs can access it
 const app = express();
+app.use(cors());
 
-var dataaa = [];
+var dataSend = [];
 
 app.listen(3000, () => {
   'server started on port: 3000';
 });
 
 app.get('/', async (req, res) => {
-  res.send(dataaa);
+  res.send(dataSend);
 });
 
 require('dotenv').config();
@@ -87,5 +90,5 @@ async function setMouseInteractWithElement({ selector, page }) {
 
   await browser.close();
 
-  dataaa = data;
+  dataSend = data;
 })();
